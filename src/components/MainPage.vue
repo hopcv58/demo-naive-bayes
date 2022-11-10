@@ -64,15 +64,17 @@ export default {
       reader.onload = () => {
         const lines = reader.result.split('\r\n');
         lines.forEach(line => {
-          const [gender, height, weight, size] = line.split(',');
+          const [gender, weight, height, size] = line.split(',');
           if (gender === 'Gender') {
             columnArr = ['Weight', 'Height', 'Size'];
             console.log(columnArr);
           } else if (weight && gender && height) {
             if (gender === 'Male') {
               dataArrForMale.push([parseInt(weight), parseInt(height), size]);
+              console.log([parseInt(weight), parseInt(height), size])
             } else {
               dataArrForFemale.push([parseInt(weight), parseInt(height), size]);
+              console.log([parseInt(weight), parseInt(height), size])
             }
           }
         });
