@@ -12,12 +12,15 @@
       <input type="number" id="weight" v-model="weight"/>
     </div>
     <div class="input">
-      <label for="age">Age:</label>
-      <input type="number" id="age" v-model="age"/>
-    </div>
-    <div class="input">
       <label for="height">Height (cm):</label>
       <input type="number" id="height" v-model="height"/>
+    </div>
+    <div class="input">
+      <label for="gender">Gender:</label>
+      <select id="gender" v-model="gender">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
     </div>
     <button @click="predict" class="button">Predict</button>
   </div>
@@ -34,7 +37,7 @@ export default {
     return {
       height: 0,
       weight: 0,
-      age: 0,
+      gender: 'Male',
       size: 0,
     }
   },
@@ -43,36 +46,51 @@ export default {
   },
   methods: {
     train: async () => {
+      if (window.trained) {
+        alert('Classifier already trained!');
+        return;
+      }
       let bayes = require('node-bayes');
-      const response = await fetch('/train.csv');
+      const response = await fetch('/newtrain.csv');
       const data = await response.blob();
       const file = new File([data], name, {
         type: data.type || "text/plain",
       });
       let columnArr = [];
-      let dataArr = [];
+      let dataArrForMale = [];
+      let dataArrForFemale = [];
       const reader = new FileReader();
       reader.readAsText(file);
       reader.onload = () => {
         const lines = reader.result.split('\r\n');
         lines.forEach(line => {
-          const [weight, age, height, size] = line.split(',');
-          if (weight === 'weight') {
-            columnArr = [weight, age, height, 'bmi', 'massSquared', size];
+          const [gender, height, weight, size] = line.split(',');
+          if (gender === 'Gender') {
+            columnArr = ['Weight', 'Height', 'Size'];
             console.log(columnArr);
-          } else if (weight && age && height && size) {
-            let bmi = weight / ((height / 100) ** 2);
-            let massSquared = weight ** 2;
-            dataArr.push([parseFloat(weight), parseFloat(age), Math.round(parseFloat(height)), bmi, massSquared, size]);
-            console.log([parseFloat(weight), parseFloat(age), Math.round(parseFloat(height)), bmi, massSquared, size])
+          } else if (weight && gender && height) {
+            if (gender === 'Male') {
+              dataArrForMale.push([parseInt(weight), parseInt(height), size]);
+            } else {
+              dataArrForFemale.push([parseInt(weight), parseInt(height), size]);
+            }
           }
         });
-        window.cls = new bayes.NaiveBayes({
+
+        window.maleClassifier = new bayes.NaiveBayes({
           columns: columnArr,
-          data: dataArr,
+          data: dataArrForMale,
           verbose: true
         });
-        window.cls.train();
+        window.maleClassifier.train();
+
+        window.femaleClassifier = new bayes.NaiveBayes({
+          columns: columnArr,
+          data: dataArrForFemale,
+          verbose: true
+        });
+        window.maleClassifier.train();
+        window.femaleClassifier.train();
         alert('Training complete');
         window.trained = true;
       }
@@ -84,12 +102,15 @@ export default {
       }
       window.weight = this.weight;
       window.height = this.height;
-      window.age = this.age;
-      let bmi = window.weight / ((window.height / 100) ** 2);
-      let massSquared = window.weight ** 2;
-      let answer = window.cls.predict([window.weight, window.age, window.height, bmi, massSquared]);
-      alert('The prediction for weight ' + window.weight + ', age ' + window.age + ', height ' + window.height + ' is ' + answer.answer);
-      console.log([window.weight, window.age, window.height], answer);
+      window.gender = this.gender;
+      let answer
+      if (this.gender === 'Male') {
+        answer = window.maleClassifier.predict([window.weight, window.height]);
+      } else {
+        answer = window.femaleClassifier.predict([window.weight, window.height]);
+      }
+      alert('The prediction for weight ' + window.weight + ', height ' + window.height + ', gender ' + window.gender + ' is ' + answer.answer);
+      console.log([window.weight, window.height], answer);
     }
   }
 }
