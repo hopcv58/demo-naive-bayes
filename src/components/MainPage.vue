@@ -3,7 +3,7 @@
     <h1>{{ msg }}</h1>
     <p>
       Click the button below to start training the classifier. You can see the training data
-      <a href="/train.csv" target="_blank" rel="noopener">here</a>.
+      <a href="/vn_train.csv" target="_blank" rel="noopener">here</a>.
     </p>
     <button @click="train" class="button">Train</button>
     <h3>Input the data for prediction:</h3>
@@ -51,7 +51,7 @@ export default {
         return;
       }
       let bayes = require('node-bayes');
-      const response = await fetch('/newtrain.csv');
+      const response = await fetch('/vn_train.csv');
       const data = await response.blob();
       const file = new File([data], name, {
         type: data.type || "text/plain",
@@ -149,5 +149,21 @@ button {
   font-size: 16px;
   margin: 4px 2px;
   cursor: pointer;
+}
+
+.input {
+  margin: 20px 0;
+}
+.input label {
+  display: inline-block;
+  width: 100px;
+}
+.input input {
+  width: 200px;
+  padding: 8px;
+}
+.input select {
+  width: 220px;
+  padding: 8px;
 }
 </style>
