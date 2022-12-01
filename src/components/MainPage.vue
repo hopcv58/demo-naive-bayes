@@ -1,11 +1,6 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <p>
-      Click the button below to start training the classifier. You can see the training data
-      <a href="/vn_train.csv" target="_blank" rel="noopener">here</a>.
-    </p>
-    <button @click="train" class="button">Train</button>
     <h3>Input the data for prediction:</h3>
     <div class="input">
       <label for="weight">Weight (kg):</label>
@@ -41,13 +36,14 @@ export default {
       size: 0,
     }
   },
-  created() {
+  async created() {
     window.trained = false;
+    await this.train();
+    window.trained = true;
   },
   methods: {
     train: async () => {
       if (window.trained) {
-        alert('Classifier already trained!');
         return;
       }
       let bayes = require('node-bayes');
@@ -93,13 +89,12 @@ export default {
         });
         window.maleClassifier.train();
         window.femaleClassifier.train();
-        alert('Training complete');
         window.trained = true;
       }
     },
     predict() {
       if (!window.trained) {
-        alert('Please train the classifier first');
+        alert('Please wait when we are initializing the model');
         return;
       }
       window.weight = this.weight;
