@@ -1,23 +1,31 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <h3>Input the data for prediction:</h3>
+    <h1>{{ languageSet[language].header }}</h1>
     <div class="input">
-      <label for="weight">Weight (kg):</label>
+      <label for="language">{{ languageSet[language].choose }}</label>
+      <select v-model="language" id="language">
+        <option v-for="(value, key) in languageSet" :value="key" :key="key">{{ value.name }}</option>
+      </select>
+    </div>
+    <h3>{{ languageSet[language]['choose-size-yourself'] }}</h3>
+    <img alt="Size table" src="../assets/table.png">
+    <h3>{{ languageSet[language]['input-for-prediction'] }}</h3>
+    <div class="input">
+      <label for="weight">{{ languageSet[language].weight }}</label>
       <input type="number" id="weight" v-model="weight"/>
     </div>
     <div class="input">
-      <label for="height">Height (cm):</label>
+      <label for="height">{{ languageSet[language].height }}</label>
       <input type="number" id="height" v-model="height"/>
     </div>
     <div class="input">
-      <label for="gender">Gender:</label>
+      <label for="gender">{{ languageSet[language].gender }}</label>
       <select id="gender" v-model="gender">
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
+        <option value="Male">{{ languageSet[language].male }}</option>
+        <option value="Female">{{ languageSet[language].female }}</option>
       </select>
     </div>
-    <button @click="predict" class="button">Predict</button>
+    <button @click="predict" class="button">{{ languageSet[language].predict }}</button>
   </div>
 </template>
 
@@ -25,15 +33,45 @@
 
 export default {
   name: 'MainPage',
-  props: {
-    msg: String
-  },
   data() {
     return {
       height: 0,
       weight: 0,
       gender: 'Male',
       size: 0,
+      language: 'vi',
+      languageSet: {
+        'en' : {
+          'name' : 'English',
+          'choose' : 'Choose language',
+          'header' : 'Clothes size predictor App',
+          'choose-size-yourself' : 'You can choose size yourself by using this table',
+          'input-for-prediction' : 'Or input your information and we will suggest you the best size',
+          'weight' : 'Weight (kg):',
+          'height' : 'Height (cm):',
+          'gender' : 'Gender:',
+          'male' : 'Male',
+          'female' : 'Female',
+          'predict' : 'Predict',
+          'training' : 'Please wait when we are initializing the model...',
+          'answer' : 'Our prediction for your clothes size is: '
+        },
+        'vi' : {
+          'name' : 'Tiếng Việt',
+          'choose' : 'Chọn ngôn ngữ',
+          'header' : 'Ứng dụng Dự đoán kích cỡ quần áo',
+          'choose-size-yourself' : 'Bạn có thể chọn kích cỡ quần áo của mình bằng bảng sau',
+          'input-for-prediction' : 'Hoặc nhập thông tin của bạn và chúng tôi sẽ đưa ra kết quả dự đoán.',
+          'weight' : 'Cân nặng (kg):',
+          'height' : 'Chiều cao (cm):',
+          'gender' : 'Giới tính:',
+          'male' : 'Nam',
+          'female' : 'Nữ',
+          'predict' : 'Dự đoán',
+          'training' : 'Vui lòng đợi trong khi chúng tôi khởi tạo mô hình...',
+          'answer' : 'Kích cỡ quần áo của bạn là: '
+        }
+      }
     }
   },
   async created() {
@@ -94,7 +132,7 @@ export default {
     },
     predict() {
       if (!window.trained) {
-        alert('Please wait when we are initializing the model');
+        alert(this.languageSet[this.language].training);
         return;
       }
       window.weight = this.weight;
@@ -106,7 +144,7 @@ export default {
       } else {
         answer = window.femaleClassifier.predict([window.weight, window.height]);
       }
-      alert('The prediction for weight ' + window.weight + ', height ' + window.height + ', gender ' + window.gender + ' is ' + answer.answer);
+      alert(this.languageSet[this.language].answer + answer.answer);
       console.log([window.weight, window.height], answer);
     }
   }
@@ -151,7 +189,8 @@ button {
 }
 .input label {
   display: inline-block;
-  width: 100px;
+  width: 200px;
+  text-align: left;
 }
 .input input {
   width: 200px;
