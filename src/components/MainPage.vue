@@ -26,6 +26,13 @@
       </select>
     </div>
     <button @click="predict" class="button">{{ languageSet[language].predict }}</button>
+    <button @click="startTesting" class="button">{{ languageSet[language].test }}</button>
+    <div v-if="total">
+      <h3>{{ languageSet[language].result }}</h3>
+      <p>{{ languageSet[language].total }}: {{ total }}</p>
+      <p>{{ languageSet[language].correct }}: {{ correct }}</p>
+      <p>{{ languageSet[language].accuracy }}: {{ total ? (correct / total * 100).toFixed(2) : 0 }}%</p>
+    </div>
   </div>
 </template>
 
@@ -39,6 +46,12 @@ export default {
       weight: 0,
       gender: 'Male',
       size: 0,
+      correct: 0,
+      total: 0,
+      maleClassifier: null,
+      femaleClassifier: null,
+      testData: [],
+      trained: false,
       language: 'vi',
       languageSet: {
         'en' : {
@@ -53,6 +66,11 @@ export default {
           'male' : 'Male',
           'female' : 'Female',
           'predict' : 'Predict',
+          'test' : 'Test',
+          'result' : 'Result',
+          'total' : 'Total',
+          'correct' : 'Correct',
+          'accuracy' : 'Accuracy',
           'training' : 'Please wait when we are initializing the model...',
           'answer' : 'Our prediction for your clothes size is: '
         },
@@ -68,6 +86,11 @@ export default {
           'male' : 'Nam',
           'female' : 'Nữ',
           'predict' : 'Dự đoán',
+          'test' : 'Kiểm thử',
+          'result' : 'Kết quả',
+          'total' : 'Tổng số',
+          'correct' : 'Đúng',
+          'accuracy' : 'Độ chính xác',
           'training' : 'Vui lòng đợi trong khi chúng tôi khởi tạo mô hình...',
           'answer' : 'Kích cỡ quần áo của bạn là: '
         }
@@ -75,13 +98,14 @@ export default {
     }
   },
   async created() {
-    window.trained = false;
+    this.trained = false;
     await this.train();
-    window.trained = true;
+    this.trained = true;
+    this.testPrepare();
   },
   methods: {
-    train: async () => {
-      if (window.trained) {
+    train: async function () {
+      if (this.trained) {
         return;
       }
       let bayes = require('node-bayes');
@@ -105,48 +129,89 @@ export default {
           } else if (weight && gender && height) {
             if (gender === 'Male') {
               dataArrForMale.push([parseInt(weight), parseInt(height), size]);
-              console.log([parseInt(weight), parseInt(height), size])
             } else {
               dataArrForFemale.push([parseInt(weight), parseInt(height), size]);
-              console.log([parseInt(weight), parseInt(height), size])
             }
           }
         });
 
-        window.maleClassifier = new bayes.NaiveBayes({
+        this.maleClassifier = new bayes.NaiveBayes({
           columns: columnArr,
           data: dataArrForMale,
           verbose: true
         });
-        window.maleClassifier.train();
+        this.maleClassifier.train();
 
-        window.femaleClassifier = new bayes.NaiveBayes({
+        this.femaleClassifier = new bayes.NaiveBayes({
           columns: columnArr,
           data: dataArrForFemale,
           verbose: true
         });
-        window.maleClassifier.train();
-        window.femaleClassifier.train();
-        window.trained = true;
+        this.maleClassifier.train();
+        this.femaleClassifier.train();
+        this.trained = true;
       }
     },
-    predict() {
-      if (!window.trained) {
+    predict: function() {
+      if (!this.trained) {
         alert(this.languageSet[this.language].training);
         return;
       }
-      window.weight = this.weight;
-      window.height = this.height;
-      window.gender = this.gender;
       let answer
       if (this.gender === 'Male') {
-        answer = window.maleClassifier.predict([window.weight, window.height]);
+        answer = this.maleClassifier.predict([this.weight, this.height]);
       } else {
-        answer = window.femaleClassifier.predict([window.weight, window.height]);
+        answer = this.femaleClassifier.predict([this.weight, this.height]);
       }
       alert(this.languageSet[this.language].answer + answer.answer);
-      console.log([window.weight, window.height], answer);
-    }
+      console.log([this.weight, this.height], answer);
+    },
+    testPrepare: async function() {
+      if (!this.trained) {
+        alert(this.languageSet[this.language].training);
+        return;
+      }
+      this.correct = 0;
+      this.total = 0;
+      const response = await fetch('/test.csv');
+      const data = await response.blob();
+      const file = new File([data], name, {
+        type: data.type || "text/plain",
+      });
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = () => {
+        const lines = reader.result.split('\r\n');
+        lines.forEach(line => {
+          const [gender, weight, height, size] = line.split(',');
+          if (gender && weight && height && size)
+            this.testData.push([gender, weight, height, size])
+        });
+      }
+    },
+    startTesting: function() {
+      if (!this.trained) {
+        alert(this.languageSet[this.language].training);
+        return;
+      }
+      // loop through all test data
+      for (let testcase of this.testData) {
+        let [gender, weight, height, size] = testcase;
+        let answer
+        if (gender === 'Male') {
+          answer = this.maleClassifier.predict([weight, height]);
+          this.total++;
+        } else if (gender === 'Female') {
+          answer = this.femaleClassifier.predict([weight, height]);
+          this.total++;
+        }
+        if (answer.answer === size) {
+          this.correct++;
+        } else {
+          console.log([weight, height, size], answer);
+        }
+      }
+    },
   }
 }
 </script>
