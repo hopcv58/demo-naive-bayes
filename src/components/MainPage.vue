@@ -199,16 +199,25 @@ export default {
         let [gender, weight, height, size] = testcase;
         let answer
         if (gender === 'Male') {
-          answer = this.maleClassifier.predict([weight, height]);
-          this.total++;
+          setTimeout(() => {
+            answer = this.maleClassifier.predict([weight, height]);
+            if (answer.answer === size) {
+              this.correct++;
+            } else {
+              console.log('Wrong answer: ', [gender, weight, height, size], answer);
+            }
+            this.total++;
+          }, 100);
         } else if (gender === 'Female') {
-          answer = this.femaleClassifier.predict([weight, height]);
-          this.total++;
-        }
-        if (answer.answer === size) {
-          this.correct++;
-        } else {
-          console.log([weight, height, size], answer);
+          setTimeout(() => {
+            answer = this.femaleClassifier.predict([weight, height]);
+            if (answer.answer === size) {
+              this.correct++;
+            } else {
+              console.log('Wrong answer: ', [gender, weight, height, size], answer);
+            }
+            this.total++;
+          }, 100);
         }
       }
     },
