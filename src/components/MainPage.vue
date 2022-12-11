@@ -26,13 +26,14 @@
       </select>
     </div>
     <button @click="predict" class="button">{{ languageSet[language].predict }}</button>
-    <button @click="startTesting" class="button">{{ languageSet[language].test }}</button>
+    <h3>{{ languageSet[language]['check-accuracy'] }}</h3>
     <div v-if="total">
-      <h3>{{ languageSet[language].result }}</h3>
       <p>{{ languageSet[language].total }}: {{ total }}</p>
       <p>{{ languageSet[language].correct }}: {{ correct }}</p>
       <p>{{ languageSet[language].accuracy }}: {{ total ? (correct / total * 100).toFixed(2) : 0 }}%</p>
     </div>
+    <button v-if="!continueTesting" @click="startTesting" class="button">{{ languageSet[language]['start-test'] }}</button>
+    <button v-if="continueTesting" @click="stopTesting" class="button">{{ languageSet[language]['stop-test'] }}</button>
   </div>
 </template>
 
@@ -51,6 +52,8 @@ export default {
       maleClassifier: null,
       femaleClassifier: null,
       testData: [],
+      testingCaseNo: 0,
+      continueTesting: false,
       trained: false,
       language: 'vi',
       languageSet: {
@@ -66,8 +69,9 @@ export default {
           'male' : 'Male',
           'female' : 'Female',
           'predict' : 'Predict',
-          'test' : 'Test',
-          'result' : 'Result',
+          'start-test' : 'Start',
+          'stop-test' : 'Stop',
+          'check-accuracy' : 'Click below to check the accuracy of the model',
           'total' : 'Total',
           'correct' : 'Correct',
           'accuracy' : 'Accuracy',
@@ -86,8 +90,9 @@ export default {
           'male' : 'Nam',
           'female' : 'Nữ',
           'predict' : 'Dự đoán',
-          'test' : 'Kiểm thử',
-          'result' : 'Kết quả',
+          'start-test' : 'Bắt đầu',
+          'stop-test' : 'Dừng',
+          'check-accuracy' : 'Nhấn vào button phía dưới để kiểm tra độ chính xác của mô hình',
           'total' : 'Tổng số',
           'correct' : 'Đúng',
           'accuracy' : 'Độ chính xác',
@@ -125,7 +130,6 @@ export default {
           const [gender, weight, height, size] = line.split(',');
           if (gender === 'Gender') {
             columnArr = ['Weight', 'Height', 'Size'];
-            console.log(columnArr);
           } else if (weight && gender && height) {
             if (gender === 'Male') {
               dataArrForMale.push([parseInt(weight), parseInt(height), size]);
@@ -194,33 +198,41 @@ export default {
         alert(this.languageSet[this.language].training);
         return;
       }
-      // loop through all test data
-      for (let testcase of this.testData) {
-        let [gender, weight, height, size] = testcase;
-        let answer
-        if (gender === 'Male') {
-          setTimeout(() => {
-            answer = this.maleClassifier.predict([weight, height]);
-            if (answer.answer === size) {
-              this.correct++;
-            } else {
-              console.log('Wrong answer: ', [gender, weight, height, size], answer);
-            }
-            this.total++;
-          }, 100);
-        } else if (gender === 'Female') {
-          setTimeout(() => {
-            answer = this.femaleClassifier.predict([weight, height]);
-            if (answer.answer === size) {
-              this.correct++;
-            } else {
-              console.log('Wrong answer: ', [gender, weight, height, size], answer);
-            }
-            this.total++;
-          }, 100);
-        }
-      }
+      this.continueTesting = true;
+      this.testSingleCase()
     },
+    stopTesting: function() {
+      this.continueTesting = false;
+    },
+    testSingleCase() {
+      let [gender, weight, height, size] = this.testData[this.testingCaseNo];
+
+      let answer
+      if (gender === 'Male') {
+        answer = this.maleClassifier.predict([weight, height]);
+        if (answer.answer === size) {
+          this.correct++;
+        } else {
+          console.log('Wrong answer: ', [gender, weight, height, size], answer.answer);
+        }
+        this.total++;
+      } else if (gender === 'Female') {
+        answer = this.femaleClassifier.predict([weight, height]);
+        if (answer.answer === size) {
+          this.correct++;
+        } else {
+          console.log('Wrong answer: ', [gender, weight, height, size], answer.answer);
+        }
+        this.total++;
+      }
+
+      if (this.continueTesting) {
+        this.testingCaseNo++;
+        setTimeout(() => {
+          this.testSingleCase();
+        }, 0);
+      }
+    }
   }
 }
 </script>
