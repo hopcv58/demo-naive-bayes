@@ -94,7 +94,7 @@ export default {
           'stop-test' : 'Dừng',
           'check-accuracy' : 'Nhấn vào button phía dưới để kiểm tra độ chính xác của mô hình',
           'total' : 'Tổng số',
-          'correct' : 'Đúng',
+          'correct' : 'Số case đúng',
           'accuracy' : 'Độ chính xác',
           'training' : 'Vui lòng đợi trong khi chúng tôi khởi tạo mô hình...',
           'answer' : 'Kích cỡ quần áo của bạn là: '
