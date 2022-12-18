@@ -24,8 +24,11 @@
       </select>
     </div>
     <button @click="predict" class="button">{{ languageSet[language].predict }}</button>
-    <h3>{{ languageSet[language]['choose-size-yourself'] }}</h3>
-    <img alt="Size table" src="../assets/table.png">
+    <br>
+    <button class="show-table" type="button" @click="showSizeTable">{{ languageSet[language]['choose-size-yourself'] }}</button>
+    <div v-show="showSizeTableFlag">
+      <img alt="Size table" src="../assets/table.png">
+    </div>
     <br>
     <h3>{{ languageSet[language]['check-accuracy'] }}</h3>
     <div v-if="total">
@@ -49,6 +52,7 @@ export default {
       gender: 'Male',
       size: 0,
       correct: 0,
+      showSizeTableFlag: false,
       total: 0,
       maleClassifier: null,
       femaleClassifier: null,
@@ -63,7 +67,7 @@ export default {
           'choose' : 'Choose language',
           'header' : 'Clothes size predictor App',
           'input-for-prediction' : 'Input your information and we will suggest you the best size',
-          'choose-size-yourself' : 'You can also choose size yourself by using this table',
+          'choose-size-yourself' : 'Click here to choose size yourself from the table',
           'weight' : 'Weight (kg):',
           'height' : 'Height (cm):',
           'gender' : 'Gender:',
@@ -84,7 +88,7 @@ export default {
           'choose' : 'Chọn ngôn ngữ',
           'header' : 'Ứng dụng Dự đoán kích cỡ quần áo',
           'input-for-prediction' : 'Nhập thông tin của bạn và chúng tôi sẽ đưa ra kết quả dự đoán.',
-          'choose-size-yourself' : 'Bạn cũng có thể tự chọn kích cỡ quần áo của mình bằng bảng sau',
+          'choose-size-yourself' : 'Nhấn vào đây để tự chọn kích cỡ quần áo của mình bằng bảng dưới đây',
           'weight' : 'Cân nặng (kg):',
           'height' : 'Chiều cao (cm):',
           'gender' : 'Giới tính:',
@@ -205,6 +209,9 @@ export default {
     stopTesting: function() {
       this.continueTesting = false;
     },
+    showSizeTable: function() {
+      this.showSizeTableFlag = !this.showSizeTableFlag;
+    },
     testSingleCase() {
       let [gender, weight, height, size] = this.testData[this.testingCaseNo];
 
@@ -286,5 +293,8 @@ button {
 .input select {
   width: 220px;
   padding: 8px;
+}
+.show-table {
+  background-color: grey;
 }
 </style>
