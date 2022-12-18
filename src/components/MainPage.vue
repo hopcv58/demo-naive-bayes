@@ -7,8 +7,6 @@
         <option v-for="(value, key) in languageSet" :value="key" :key="key">{{ value.name }}</option>
       </select>
     </div>
-    <h3>{{ languageSet[language]['choose-size-yourself'] }}</h3>
-    <img alt="Size table" src="../assets/table.png">
     <h3>{{ languageSet[language]['input-for-prediction'] }}</h3>
     <div class="input">
       <label for="weight">{{ languageSet[language].weight }}</label>
@@ -26,6 +24,9 @@
       </select>
     </div>
     <button @click="predict" class="button">{{ languageSet[language].predict }}</button>
+    <h3>{{ languageSet[language]['choose-size-yourself'] }}</h3>
+    <img alt="Size table" src="../assets/table.png">
+    <br>
     <h3>{{ languageSet[language]['check-accuracy'] }}</h3>
     <div v-if="total">
       <p>{{ languageSet[language].total }}: {{ total }}</p>
@@ -61,8 +62,8 @@ export default {
           'name' : 'English',
           'choose' : 'Choose language',
           'header' : 'Clothes size predictor App',
-          'choose-size-yourself' : 'You can choose size yourself by using this table',
-          'input-for-prediction' : 'Or input your information and we will suggest you the best size',
+          'input-for-prediction' : 'Input your information and we will suggest you the best size',
+          'choose-size-yourself' : 'You can also choose size yourself by using this table',
           'weight' : 'Weight (kg):',
           'height' : 'Height (cm):',
           'gender' : 'Gender:',
@@ -82,8 +83,8 @@ export default {
           'name' : 'Tiếng Việt',
           'choose' : 'Chọn ngôn ngữ',
           'header' : 'Ứng dụng Dự đoán kích cỡ quần áo',
-          'choose-size-yourself' : 'Bạn có thể chọn kích cỡ quần áo của mình bằng bảng sau',
-          'input-for-prediction' : 'Hoặc nhập thông tin của bạn và chúng tôi sẽ đưa ra kết quả dự đoán.',
+          'input-for-prediction' : 'Nhập thông tin của bạn và chúng tôi sẽ đưa ra kết quả dự đoán.',
+          'choose-size-yourself' : 'Bạn cũng có thể tự chọn kích cỡ quần áo của mình bằng bảng sau',
           'weight' : 'Cân nặng (kg):',
           'height' : 'Chiều cao (cm):',
           'gender' : 'Giới tính:',
